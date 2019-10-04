@@ -1,4 +1,4 @@
 version: 1.0.{build}
 build:
-  project: extensions.sln
+  project: extensions.csproj
   verbosity: minimal
