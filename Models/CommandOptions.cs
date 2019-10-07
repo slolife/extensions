@@ -18,5 +18,10 @@ namespace extensions.Models
 
         [OptionalArgument("files", "count", "Count type (files, size")]
         public string Count { get; set; }
+
+        [OptionalArgument("", "remove", "Remove comma separated list of extensions (bak,gif,jpg)")]
+        public string Remove{ get; set; }
+
+        public bool RemoveFiles { get; set; }
     }
 }

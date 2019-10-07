@@ -12,18 +12,51 @@ namespace extensions
     {
         private static readonly Dictionary<string, ExtensionData> _extensions = new Dictionary<string, ExtensionData>();
         private static CommandOptions _options;
+        private static List<string> _removeExtensions = new List<string>();
+        private static long _filesDeleted = 0;
+
         static void Main(string[] args)
         {
-            if (!Parser.TryParse(args, out _options) || OptionsAreInvalid())
+            if (!Parser.TryParse(args, out _options))
             {
-                Console.WriteLine("extensions utility counts all file extensions used in a folder tree.");
-                Parser.DisplayHelp<CommandOptions>(HelpFormat.Full);
+                DisplayHelp();
+                return;
+            }
+
+            if (_options.Root == ".")
+            {
+                _options.Root = Directory.GetCurrentDirectory();
+            }
+
+            if (OptionsAreInvalid())
+            {
+                DisplayHelp();
                 return;
             }
 
             if (!ConfirmOverwriteOutputFile())
             {
                 return;
+            }
+
+            _options.RemoveFiles = !string.IsNullOrEmpty(_options.Remove);
+
+            if (_options.RemoveFiles)
+            {
+                var list = _options.Remove.Split(',').ToList();
+                foreach (var item in list)
+                {
+                    var value = item.Trim();
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        if (!value.StartsWith("."))
+                        {
+                            value = "." + value;
+                        }
+
+                        _removeExtensions.Add(value);
+                    }
+                }
             }
 
             TallyExtensions(_options.Root);
@@ -65,6 +98,11 @@ namespace extensions
                     throw new InvalidOperationException("Unknown output type");
             }
 
+            if (_filesDeleted > 0)
+            {
+                Console.Error.WriteLine($"{_filesDeleted} files deleted matching remove extensions.");
+            }
+
             if (string.IsNullOrEmpty(_options.OutputFile))
             {
                 Console.WriteLine(resultText);
@@ -74,6 +112,12 @@ namespace extensions
                 // File.WriteAllText() will overwrite an existing file
                 File.WriteAllText(_options.OutputFile, resultText);
             }
+        }
+
+        static void DisplayHelp()
+        {
+            Console.WriteLine("extensions utility counts all file extensions used in a folder tree.");
+            Parser.DisplayHelp<CommandOptions>(HelpFormat.Full);
         }
 
         static bool ConfirmOverwriteOutputFile()
@@ -127,14 +171,23 @@ namespace extensions
 
             foreach (var file in Directory.GetFiles(root))
             {
-                IncrementExtension(file);
+                var fileInfo = new FileInfo(file);
+                var extension = fileInfo.Extension;
+
+                if (_removeExtensions.Contains(extension))
+                {
+                    fileInfo.Delete();
+                    _filesDeleted++;
+                }
+                else
+                {
+                    IncrementExtension(fileInfo, extension);
+                }
             }
         }
 
-        static void IncrementExtension(string file)
+        static void IncrementExtension(FileInfo fileInfo, string extension)
         {
-            var extension = Path.GetExtension(file);
-            var fileInfo = new FileInfo(file);
             if (_extensions.ContainsKey(extension))
             {
                 _extensions[extension].Count += 1;
