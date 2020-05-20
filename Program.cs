@@ -116,7 +116,7 @@ namespace extensions
 
         static void DisplayHelp()
         {
-            Console.WriteLine("extensions utility counts all file extensions used in a folder tree.");
+            Console.WriteLine("extensions utility counts all file extensions used in a folder tree. It can also remove specified extensions.");
             Parser.DisplayHelp<CommandOptions>(HelpFormat.Full);
         }
 

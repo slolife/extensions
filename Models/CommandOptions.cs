@@ -4,7 +4,7 @@ namespace extensions.Models
 {
     class CommandOptions
     {
-        [RequiredArgument(0, "dir", "Directory to seach")]
+        [OptionalArgument(".", "dir", "Directory to seach")]
         public string Root { get; set; }
 
         [OptionalArgument("csv", "output", "Output type (csv, json")]
