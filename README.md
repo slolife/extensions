@@ -8,4 +8,4 @@ Usage:
   - output : Output type (csv, json (string, default=csv)
   - out    : output file (string, default=)
   - sort   : Sort type (extension, count (string, default=extension)
-  - count  : Count type (files, size (string, default=files)
+  - count  : Count type (files, size (string, default=files))
